@@ -1,0 +1,18 @@
+{
+  "name": "cloudeless-p",
+  "license": "MIT",
+  "scripts": {
+    "terraform": "cd ../; ./tf",
+    "sls": "cd ../; ./sls",
+    "sls:deploy": "npm run sls -- deploy",
+    "build": "mkdir -p artifact && cd src && cp bootstrap ../artifact/bootstrap && cp run.sh ../artifact/run.sh && cd ../artifact && chmod +x bootstrap run.sh && zip -m function.zip bootstrap run.sh",
+    "deploy:function": "npm run sls -- deploy function",
+    "deploy": "npm run build && npm run sls -- deploy",
+    "logs:tail": "npm run sls -- logs --tail"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "serverless": "^4.17.2"
+  }
+}

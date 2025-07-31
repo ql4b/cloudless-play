@@ -1,0 +1,29 @@
+service: ${env:NAMESPACE}-${env:NAME}
+frameworkVersion: "4"
+
+custom: ${file(sls/custom.yml):custom}
+
+provider:
+  name: aws
+  stage: ${opt:stage, 'staging'}
+  stackName: ${self:custom.appName}-${opt:stage, 'staging'}
+  region: ${env:AWS_REGION, 'eu-central-1'}
+  profile: ${env:AWS_PROFILE, 'ql4b'}
+  iam: ${file(./sls/iam.yml):iam}
+
+  httpApi:
+    cors: true
+
+  apiGateway:
+    # apiKeys:
+    #   - ${ssm:/${env:NAMESPACE}/${env:NAME}/${self:provider.stage}/restApiKey}
+    restApiId: ${ssm:/${env:NAMESPACE}/${env:NAME}/${self:provider.stage}/restApiId }
+    restApiRootResourceId: ${ssm:/${env:NAMESPACE}/${env:NAME}/${self:provider.stage}/restApiRootResourceId}
+  
+  # uncomment if necessary
+  # environment: ${file(sls/env.yml):environment}
+  
+functions: ${file(sls/functions.yml):functions}
+
+# uncomment if necessary
+# layers: ${file(sls/layers.yml):layers}

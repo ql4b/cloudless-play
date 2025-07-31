@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -eu
+
+HANDLER="${HANDLER:-/var/task/run.sh}"
+
+while true; do
+  curl -s -D /tmp/h -o /tmp/e "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/next"
+  id=$(awk -F': ' 'tolower($1)=="lambda-runtime-aws-request-id" {gsub("\r","",$2);print $2}' /tmp/h)
+
+  if ! resp="$("$HANDLER" </tmp/e)"; then
+    curl -s -X POST \
+      "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/${id}/error" \
+      -H 'Content-Type: application/json' \
+      -d '{"errorMessage":"handler failed"}' >/dev/null
+    continue
+  fi
+
+  curl -s -X POST \
+    "http://${AWS_LAMBDA_RUNTIME_API}/2018-06-01/runtime/invocation/${id}/response" \
+    -d "$resp" >/dev/null
+done
